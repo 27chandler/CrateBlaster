@@ -77,6 +77,8 @@ private:
 
 	int powerup_type = 0;
 
+	Ship* ship_ptr = nullptr;
+
 };
 
 #endif

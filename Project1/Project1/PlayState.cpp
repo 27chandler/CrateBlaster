@@ -79,7 +79,7 @@ void PlayState::Init()
 		Objects.push_back(new Asteroid(ARENA_SIZE));
 
 		Objects.back()->Set_Id("Asteroid");
-		Asteroid* asteroid_ptr = dynamic_cast<Asteroid*>(Objects.back());
+		Asteroid* asteroid_ptr = static_cast<Asteroid*>(Objects.back());
 		asteroid_ptr->Set_Collision_Distance(1.3f);
 
 		float x_momentum = (((rand() % 3) + 1) / 100.0f);
@@ -100,7 +100,7 @@ void PlayState::Init()
 
 		Objects.back()->Set_Id("Ship");
 
-		Ship* ship_ptr = nullptr;
+		ship_ptr = nullptr;
 		ship_ptr = dynamic_cast<Ship*>(Objects.back());
 
 		if (ship_ptr == nullptr)
@@ -166,25 +166,17 @@ void PlayState::Set_Powerup_Display(Texture * input_texture)
 
 void PlayState::Update()
 {
-	Ship* ship_ptr = nullptr;
-
-	for (auto it = Objects.begin(); it != Objects.end(); it++) // Runs through all the objects to update the spaceship
-	{
-		if ((*it)->Get_Id() == "Ship")
-		{
-			ship_ptr = dynamic_cast<Ship*>(*it);
-			if (ship_ptr->Get_Is_Out_Of_Bounds()) // Checks to see if the spaceship has left the play area
-			{
-				Death_Sound.Stop();
-				Death_Sound.Play();
-				is_active = 0;
-				is_alive = 0;
-				TheGame::Instance()->Change_State(new DeathState(this,score));
-			}
-		}
-	}
 
 	MyCamera.Update();
+
+	if (ship_ptr->Get_Is_Out_Of_Bounds()) // Checks to see if the spaceship has left the play area
+	{
+		Death_Sound.Stop();
+		Death_Sound.Play();
+		is_active = 0;
+		is_alive = 0;
+		TheGame::Instance()->Change_State(new DeathState(this, score));
+	}
 
 	if (ship_ptr->Get_Is_Boost_Enabled())
 	{
