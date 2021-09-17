@@ -30,6 +30,10 @@ public:
 	virtual void Render();
 	virtual void Init();
 
+	void InitDying();
+
+	void InitPowerups();
+
 	void InitScore();
 
 	void SpawnShip();

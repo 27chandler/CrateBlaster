@@ -41,10 +41,24 @@ void PlayState::Init()
 	InitAudio();
 	InitSkybox();
 	InitBorder();
+	InitScore();
+	InitPowerups();
+	InitDying();
+
 	SpawnObstacles();
 	SpawnShip();
-	InitScore();
 
+	MyCamera.Init(ThePipeline::Instance()->GetProgramID()); // Initialises the camera
+}
+
+void PlayState::InitDying()
+{
+	Death_Sound.Set_Audio_Data("EXPLOSION", AudioManager::SFX);
+	Death_Sound.Set_Volume(1);
+}
+
+void PlayState::InitPowerups()
+{
 	Powerup_Display.Init(ThePipeline::Instance()->GetProgramID());
 
 	Powerup_Display.Load_Texture(&Boost_Texture);
@@ -54,11 +68,6 @@ void PlayState::Init()
 	Powerup_Display.Set_Pos(glm::vec3(10.0f, 10.0f, 0.0f));
 
 	Powerup_Display.Is_Animated() = 0;
-
-	Death_Sound.Set_Audio_Data("EXPLOSION", AudioManager::SFX);
-	Death_Sound.Set_Volume(1);
-
-	MyCamera.Init(ThePipeline::Instance()->GetProgramID()); // Initialises the camera
 }
 
 void PlayState::InitScore()

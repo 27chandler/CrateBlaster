@@ -32,7 +32,7 @@ void GameManager::Init()
 	TheScreen::Instance()->Send_Program_ID(ThePipeline::Instance()->GetProgramID());
 	TheScreen::Instance()->Set_3D_Screen();
 
-	TheScreen::Instance()->Set_FullScreen_Mode(true);
+	TheScreen::Instance()->Set_FullScreen_Mode(false);
 
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 
