@@ -30,6 +30,10 @@ public:
 	virtual void Render();
 	virtual void Init();
 
+	void InitScore();
+
+	void SpawnShip();
+
 	//void Save_Score();
 	void Set_Powerup_Display(Texture* input_texture);
 
@@ -42,6 +46,12 @@ private:
 	float movespeed = 0.05f;
 
 private:
+	void InitLights();
+	void InitTextures();
+	void InitAudio();
+	void SpawnObstacles();
+	void InitBorder();
+	void InitSkybox();
 
 	enum POWERUPS { NONE = 0, BOOST = 1 , SCORE = 2};
 

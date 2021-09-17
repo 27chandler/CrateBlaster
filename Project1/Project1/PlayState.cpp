@@ -36,64 +36,49 @@ PlayState::~PlayState()
 
 void PlayState::Init()
 {
-	// Sets up the directional light to keep all the objects lit up
-	Light::total_lights = 0;
+	InitLights();
+	InitTextures();
+	InitAudio();
+	InitSkybox();
+	InitBorder();
+	SpawnObstacles();
+	SpawnShip();
+	InitScore();
 
-	Star_Light.Init();
-	Star_Light.Set_Pos(glm::vec3((ARENA_SIZE * 2), 0.0f, 0.0f));
-	Star_Light.Set_Ambient(glm::vec3(0.4f, 0.4f, 0.4f));
-	Star_Light.Set_Diffuse(glm::vec3(0.9f, 0.9f, 0.9f));
-	Star_Light.Set_Specular(glm::vec3(0.8f, 0.8f, 0.8f));
+	Powerup_Display.Init(ThePipeline::Instance()->GetProgramID());
 
-	Star_Light.Set_Const(0.01f);
-	Star_Light.Set_Lin(0.0001f);
-	Star_Light.Set_Quad(0.0001f);
-	//
+	Powerup_Display.Load_Texture(&Boost_Texture);
+	Powerup_Display.Set_Dimension(250, 75);
+	Powerup_Display.Set_Texture_Dimension(1, 1);
+	Powerup_Display.Set_Texture_Cell(0, 0);
+	Powerup_Display.Set_Pos(glm::vec3(10.0f, 10.0f, 0.0f));
 
-	// Load textures and audio
-	Crate_Texture.Load("Assets/Textures/Crate.jpg", "Crate");
-	Skybox_Texture.Load("Assets/Textures/Space.png", "Skybox");
-	Arena_Border_Texture.Load("Assets/Textures/Box_Grid.png","GRID");
-	Number_Texture.Load("Assets/Textures/Calibri.png", "Numbers");
-	Boost_Texture.Load("Assets/Textures/Boost.png", "Boost");
-	Score_Powerup_Texture.Load("Assets/Textures/Score.png", "Score_Up");
-	TheAudio::Instance()->Load_From_File("Assets/Audio/Shoot.wav", AudioManager::SFX, "SHOOT");
-	TheAudio::Instance()->Load_From_File("Assets/Audio/Powerup.wav", AudioManager::SFX, "POWERUP");
-	TheAudio::Instance()->Load_From_File("Assets/Audio/Explode.wav", AudioManager::SFX, "EXPLOSION");
-	//
+	Powerup_Display.Is_Animated() = 0;
 
-	// Load skybox
-	The_Sky.Init(ThePipeline::Instance()->GetProgramID());
-	The_Sky.Load_Texture(&Skybox_Texture);
-	The_Sky.Set_Scale(glm::vec3(3000.0f));
-	//
+	Death_Sound.Set_Audio_Data("EXPLOSION", AudioManager::SFX);
+	Death_Sound.Set_Volume(1);
 
-	// Load arena border skybox
-	Arena_Border.Init(ThePipeline::Instance()->GetProgramID());
-	Arena_Border.Load_Texture(&Arena_Border_Texture);
-	Arena_Border.Set_Scale(glm::vec3(ARENA_SIZE*2));
-	//
+	MyCamera.Init(ThePipeline::Instance()->GetProgramID()); // Initialises the camera
+}
 
-	for (int i = 0; i < 8; i++) // Create all the starting asteroids
+void PlayState::InitScore()
+{
+	for (int i = 0; i < NUM_OF_SCORE_DISPLAYS; i++) // Creates the sprite images to display the score in the corner
 	{
-		Objects.push_back(new Asteroid(ARENA_SIZE));
+		Score_Display[i].Init(ThePipeline::Instance()->GetProgramID());
 
-		Objects.back()->Set_Id("Asteroid");
-		Asteroid* asteroid_ptr = static_cast<Asteroid*>(Objects.back());
-		asteroid_ptr->Set_Collision_Distance(1.3f);
+		Score_Display[i].Load_Texture(&Number_Texture);
+		Score_Display[i].Set_Dimension(50, 50);
+		Score_Display[i].Set_Texture_Dimension(16, 16);
+		Score_Display[i].Set_Texture_Cell(1, 1);
+		Score_Display[i].Set_Pos(glm::vec3(TheScreen::Instance()->Get_Screen_Width() - (50.0f * (i + 1)), 0.0f, 0.0f));
 
-		float x_momentum = (((rand() % 3) + 1) / 100.0f);
-		float y_momentum = (((rand() % 3) + 1) / 100.0f);
-		float z_momentum = (((rand() % 3) + 1) / 100.0f);
-
-		asteroid_ptr->Init(ThePipeline::Instance()->GetProgramID());
-		asteroid_ptr->Load_Texture(&Crate_Texture);
-		asteroid_ptr->Set_Scale(glm::vec3(1.0f));
-		asteroid_ptr->Set_Pos(glm::vec3((2.0f * i), (2.0f * (i + 2)), -1.0f));
-		asteroid_ptr->Set_Momentum(glm::vec3(x_momentum, y_momentum, z_momentum));
-		asteroid_ptr->Update();
+		Score_Display[i].Is_Animated() = 0;
 	}
+}
 
+void PlayState::SpawnShip()
+{
 	for (int i = 0; i < 1; i++) // Create the player's ship
 	{
 		Objects.push_back(new Ship(ARENA_SIZE));
@@ -127,35 +112,47 @@ void PlayState::Init()
 		ship_ptr->Set_Momentum(glm::vec3(0.0f, 0.0f, 0.0001f));
 		ship_ptr->Update();
 	}
+}
 
-
-	for (int i = 0; i < NUM_OF_SCORE_DISPLAYS; i++) // Creates the sprite images to display the score in the corner
+void PlayState::SpawnObstacles()
+{
+	for (int i = 0; i < 8; i++) // Create all the starting asteroids
 	{
-		Score_Display[i].Init(ThePipeline::Instance()->GetProgramID());
+		Objects.push_back(new Asteroid(ARENA_SIZE));
 
-		Score_Display[i].Load_Texture(&Number_Texture);
-		Score_Display[i].Set_Dimension(50, 50);
-		Score_Display[i].Set_Texture_Dimension(16, 16);
-		Score_Display[i].Set_Texture_Cell(1, 1);
-		Score_Display[i].Set_Pos(glm::vec3(TheScreen::Instance()->Get_Screen_Width() - (50.0f * (i + 1)),0.0f, 0.0f));
+		Objects.back()->Set_Id("Asteroid");
+		Asteroid* asteroid_ptr = static_cast<Asteroid*>(Objects.back());
+		asteroid_ptr->Set_Collision_Distance(1.3f);
 
-		Score_Display[i].Is_Animated() = 0;
+		float x_momentum = (((rand() % 3) + 1) / 100.0f);
+		float y_momentum = (((rand() % 3) + 1) / 100.0f);
+		float z_momentum = (((rand() % 3) + 1) / 100.0f);
+
+		asteroid_ptr->Init(ThePipeline::Instance()->GetProgramID());
+		asteroid_ptr->Load_Texture(&Crate_Texture);
+		asteroid_ptr->Set_Scale(glm::vec3(1.0f));
+		asteroid_ptr->Set_Pos(glm::vec3((2.0f * i), (2.0f * (i + 2)), -1.0f));
+		asteroid_ptr->Set_Momentum(glm::vec3(x_momentum, y_momentum, z_momentum));
+		asteroid_ptr->Update();
 	}
+}
 
-	Powerup_Display.Init(ThePipeline::Instance()->GetProgramID());
+void PlayState::InitBorder()
+{
+	// Load arena border skybox
+	Arena_Border.Init(ThePipeline::Instance()->GetProgramID());
+	Arena_Border.Load_Texture(&Arena_Border_Texture);
+	Arena_Border.Set_Scale(glm::vec3(ARENA_SIZE * 2));
+	//
+}
 
-	Powerup_Display.Load_Texture(&Boost_Texture);
-	Powerup_Display.Set_Dimension(250, 75);
-	Powerup_Display.Set_Texture_Dimension(1, 1);
-	Powerup_Display.Set_Texture_Cell(0, 0);
-	Powerup_Display.Set_Pos(glm::vec3(10.0f, 10.0f, 0.0f));
-
-	Powerup_Display.Is_Animated() = 0;
-
-	Death_Sound.Set_Audio_Data("EXPLOSION", AudioManager::SFX);
-	Death_Sound.Set_Volume(1);
-
-	MyCamera.Init(ThePipeline::Instance()->GetProgramID()); // Initialises the camera
+void PlayState::InitSkybox()
+{
+	// Load skybox
+	The_Sky.Init(ThePipeline::Instance()->GetProgramID());
+	The_Sky.Load_Texture(&Skybox_Texture);
+	The_Sky.Set_Scale(glm::vec3(3000.0f));
+	//
 }
 
 void PlayState::Set_Powerup_Display(Texture * input_texture)
@@ -163,10 +160,44 @@ void PlayState::Set_Powerup_Display(Texture * input_texture)
 	Powerup_Display.Load_Texture(input_texture);
 }
 
+void PlayState::InitLights()
+{
+	// Sets the static int in the light file
+	Light::total_lights = 0;
+
+	Star_Light.Init();
+	Star_Light.Set_Pos(glm::vec3((ARENA_SIZE * 2), 0.0f, 0.0f));
+	Star_Light.Set_Ambient(glm::vec3(0.4f, 0.4f, 0.4f));
+	Star_Light.Set_Diffuse(glm::vec3(0.9f, 0.9f, 0.9f));
+	Star_Light.Set_Specular(glm::vec3(0.8f, 0.8f, 0.8f));
+
+	Star_Light.Set_Const(0.01f);
+	Star_Light.Set_Lin(0.0001f);
+	Star_Light.Set_Quad(0.0001f);
+}
+
+void PlayState::InitTextures()
+{
+	// Load textures
+	Crate_Texture.Load("Assets/Textures/Crate.jpg", "Crate");
+	Skybox_Texture.Load("Assets/Textures/Space.png", "Skybox");
+	Arena_Border_Texture.Load("Assets/Textures/Box_Grid.png", "GRID");
+	Number_Texture.Load("Assets/Textures/Calibri.png", "Numbers");
+	Boost_Texture.Load("Assets/Textures/Boost.png", "Boost");
+	Score_Powerup_Texture.Load("Assets/Textures/Score.png", "Score_Up");
+}
+
+void PlayState::InitAudio()
+{
+	// Load all playstate audio
+	TheAudio::Instance()->Load_From_File("Assets/Audio/Shoot.wav", AudioManager::SFX, "SHOOT");
+	TheAudio::Instance()->Load_From_File("Assets/Audio/Powerup.wav", AudioManager::SFX, "POWERUP");
+	TheAudio::Instance()->Load_From_File("Assets/Audio/Explode.wav", AudioManager::SFX, "EXPLOSION");
+}
+
 
 void PlayState::Update()
 {
-
 	MyCamera.Update();
 
 	if (ship_ptr->Get_Is_Out_Of_Bounds()) // Checks to see if the spaceship has left the play area
