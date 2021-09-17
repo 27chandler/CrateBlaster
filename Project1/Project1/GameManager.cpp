@@ -17,7 +17,7 @@ void GameManager::Init()
 
 	TheAudio::Instance()->Init();
 
-	TheScreen::Instance()->Init(4, 0, "The Game", window_width, window_height, true, true, true);
+	TheScreen::Instance()->Init(4, 0, "Crate Blaster", window_width, window_height, true, true, true);
 	TheScreen::Instance()->ErrorCheck();
 	TheScreen::Instance()->EnableZBuffer();
 
